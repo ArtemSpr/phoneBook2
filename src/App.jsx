@@ -43,6 +43,7 @@ const App = () => {
     getAll().then((data) => {
       console.log("Data was collected", data);
       console.log("Data amount: ", data.length);
+      console.log("Data amount: ", 2);
       setPersons(data.persons);
     });
   };
