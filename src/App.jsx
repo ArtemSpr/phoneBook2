@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import dotenv from "dotenv";
+
+// dotenv.config();
 const baseUrl = "/api/persons";
+console.log("BASE URL:", baseUrl);
 
 const getAll = () => {
-  const request = axios.get(baseUrl);
-  return request.then((response) => response.data);
+  return axios.get(baseUrl).then((response) => response.data);
 };
 
 const addPerson = (newPerson) => {
   const request = axios.post(baseUrl, newPerson);
-  return request.then((response) => response.data);
+  return request.then((response) => response);
 };
 
 const deletePerson = (id) => {
+  console.log(id);
   const request = axios.delete(`${baseUrl}/${id}`);
   return request.then(() => id);
 };
@@ -36,20 +40,19 @@ const App = () => {
   };
 
   const personsGet = () => {
-    getAll().then((response) => {
-      console.log("Данні з сервера отримано");
-      setPersons(response.data);
+    getAll().then((data) => {
+      console.log("Data was collected", data);
+      console.log("Data amount: ", data.length);
+      setPersons(data.persons);
     });
   };
 
-  useEffect(personsGet, []);
+  useEffect(personsGet(), []);
 
-  // Обробники змін
   const handleNameChange = (event) => setNewName(event.target.value);
   const handleNumberChange = (event) => setNewNumber(event.target.value);
   const handleFilterNameChange = (event) => setFilterName(event.target.value);
 
-  // Додавання нового користувача
   const addPersonFunc = (event) => {
     event.preventDefault();
 
@@ -68,7 +71,7 @@ const App = () => {
 
         addPerson(updatedPerson)
           .then((response) => {
-            console.log("Користувача замінено");
+            console.log("User was updated");
             setPersons(
               persons.map((person) =>
                 person.id !== existingPerson.id ? person : response.data
@@ -78,7 +81,7 @@ const App = () => {
             setNewNumber("");
           })
           .catch((error) => {
-            console.error("Помилка в оновленні номера:", error);
+            console.error("Error with number changing :", error);
           });
       }
     } else {
@@ -93,22 +96,18 @@ const App = () => {
     }
   };
 
-  // Видалення користувача
   const deletePersonFunc = (id, name) => {
     const result = window.confirm("Delete " + name + " ?");
 
     if (result) {
       deletePerson(id)
         .then(() => {
-          console.log("Користувача видалено");
+          console.log(`User with id ${id} was deleted`);
           setPersons(persons.filter((person) => person.id !== id));
           showDeleteMessage();
         })
         .catch((error) => {
-          console.error(
-            `Виявлено помилку при видаленні користувача з id ${id}:`,
-            error
-          );
+          console.error(`Error with deleting user with id: ${id}`, error);
         });
     }
   };
@@ -156,23 +155,29 @@ const App = () => {
           </tr>
         </thead>
         <tbody>
-          {persons
-            .filter((person) =>
-              person.name.toLowerCase().includes(nameFilter.toLowerCase())
-            )
-            .map((person) => (
-              <tr key={person.id}>
-                <td>{person.name}</td>
-                <td>{person.number}</td>
-                <td>
-                  <button
-                    onClick={() => deletePersonFunc(person.id, person.name)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+          {Array.isArray(persons) ? (
+            persons
+              .filter((person) =>
+                person.name.toLowerCase().includes(nameFilter.toLowerCase())
+              )
+              .map((person) => (
+                <tr key={person.id}>
+                  <td>{person.name}</td>
+                  <td>{person.number}</td>
+                  <td>
+                    <button
+                      onClick={() => deletePersonFunc(person.id, person.name)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+          ) : (
+            <tr>
+              <td colSpan="3">Loading or no persons data</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
