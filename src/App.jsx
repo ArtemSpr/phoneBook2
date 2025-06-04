@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import dotenv from "dotenv";
 
-// dotenv.config();
 const baseUrl = "/api/persons";
-console.log("BASE URL:", baseUrl);
 
+// Fetch all persons from backend
 const getAll = () => {
-  return axios.get(baseUrl).then((response) => response.data);
+  return axios.get(baseUrl).then((response) => {
+    console.log("Fetched all persons:", response.data);
+    return response.data;
+  });
 };
 
+// Create new person
 const addPerson = (newPerson) => {
-  const request = axios.post(baseUrl, newPerson);
-  return request.then((response) => response);
+  return axios.post(baseUrl, newPerson);
 };
 
+// Update existing person's number
+const updatePerson = (id, updatedPerson) => {
+  return axios.put(`${baseUrl}/${id}`, updatedPerson);
+};
+
+// Delete person by ID
 const deletePerson = (id) => {
-  console.log(id);
-  const request = axios.delete(`${baseUrl}/${id}`);
-  return request.then(() => id);
+  return axios.delete(`${baseUrl}/${id}`).then(() => {
+    console.log(`Deleted person with id: ${id}`);
+    return id;
+  });
 };
 
 import Filter from "./Filter";
@@ -34,31 +42,43 @@ const App = () => {
   const [visibleDelete, setVisibleDelete] = useState(false);
   const [confirmChanges, setConfirmChanges] = useState(false);
 
+  // Show temporary message after deleting
   const showDeleteMessage = () => {
     setVisibleDelete(true);
     setTimeout(() => setVisibleDelete(false), 3000);
   };
 
+  // Fetch persons list from API
   const personsGet = () => {
     getAll().then((data) => {
-      console.log("Data was collected", data);
-      console.log("Data amount: ", data.length);
-      console.log("Data amount: ", 2);
-      setPersons(data.persons);
+      setPersons(data);
     });
   };
 
-  useEffect(personsGet(), []);
+  // Load persons when component mounts
+  useEffect(() => {
+    personsGet();
+  }, []);
 
+  // Optional debug logging for persons state updates
+  useEffect(() => {
+    console.log("Updated persons list:", persons);
+  }, [persons]);
+
+  // Handle input field changes
   const handleNameChange = (event) => setNewName(event.target.value);
   const handleNumberChange = (event) => setNewNumber(event.target.value);
   const handleFilterNameChange = (event) => setFilterName(event.target.value);
 
+  // Handle form submission
   const addPersonFunc = (event) => {
     event.preventDefault();
 
     const existingPerson = persons.find(
-      (person) => person.name.toLowerCase() === newName.toLowerCase()
+      (person) =>
+        person.name &&
+        newName &&
+        person.name.toLowerCase() === newName.toLowerCase()
     );
 
     if (existingPerson) {
@@ -70,9 +90,9 @@ const App = () => {
       if (userConfirmed) {
         const updatedPerson = { ...existingPerson, number: newNumber };
 
-        addPerson(updatedPerson)
+        updatePerson(existingPerson.id, updatedPerson)
           .then((response) => {
-            console.log("User was updated");
+            console.log("User number updated:", response.data);
             setPersons(
               persons.map((person) =>
                 person.id !== existingPerson.id ? person : response.data
@@ -82,33 +102,37 @@ const App = () => {
             setNewNumber("");
           })
           .catch((error) => {
-            console.error("Error with number changing :", error);
+            console.error("Error updating user:", error);
           });
       }
     } else {
       const newPerson = { name: newName, number: newNumber };
 
-      addPerson(newPerson).then((response) => {
-        console.log("Нового користувача додано");
-        setPersons([...persons, response.data]);
-        setNewName("");
-        setNewNumber("");
-      });
+      addPerson(newPerson)
+        .then((response) => {
+          console.log("Added new user:", response.data);
+          setPersons((prevPersons) => [...prevPersons, response.data]);
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          console.error("Error adding user:", error);
+        });
     }
   };
 
+  // Delete person with confirmation
   const deletePersonFunc = (id, name) => {
     const result = window.confirm("Delete " + name + " ?");
 
     if (result) {
       deletePerson(id)
         .then(() => {
-          console.log(`User with id ${id} was deleted`);
-          setPersons(persons.filter((person) => person.id !== id));
           showDeleteMessage();
+          personsGet();
         })
         .catch((error) => {
-          console.error(`Error with deleting user with id: ${id}`, error);
+          console.error(`Error deleting user with id ${id}:`, error);
         });
     }
   };
@@ -137,6 +161,9 @@ const App = () => {
             handleNameChange={handleNameChange}
             handleNumberChange={handleNumberChange}
             addPerson={addPersonFunc}
+            didExists={persons.some(
+              (p) => p.name.toLowerCase() === newName.toLowerCase()
+            )}
           />
         }
         title="Add a new person"
@@ -158,8 +185,10 @@ const App = () => {
         <tbody>
           {Array.isArray(persons) ? (
             persons
-              .filter((person) =>
-                person.name.toLowerCase().includes(nameFilter.toLowerCase())
+              .filter(
+                (person) =>
+                  person.name &&
+                  person.name.toLowerCase().includes(nameFilter.toLowerCase())
               )
               .map((person) => (
                 <tr key={person.id}>

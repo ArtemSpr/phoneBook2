@@ -4,26 +4,26 @@ const NewPerson = (props) => {
   const [visible, setVisible] = useState(false);
   const [visibleChange, setVisibleChange] = useState(false);
   const exists = props.didExists;
+  console.log("Exists:", exists);
 
+  // Determine whether to show add or change message
   const didChange = () => {
-    console.log(
-      "Перевірка чи такий користувач вже існує в базі даних " + props.didExists
-    );
     if (exists) {
-      return showChangeMessage(), console.log("Повідомлення про зміну номера");
+      showChangeMessage();
+      console.log("User already exists, showing change notification");
     } else {
-      return (
-        showMessage(), console.log("Повідомлення про додавання користувача")
-      );
+      showMessage();
+      console.log("User does not exist, showing add notification");
     }
   };
 
+  // Show notification when a new user is added
   const showMessage = () => {
     setVisible(true);
     setTimeout(() => setVisible(false), 3000);
   };
 
-  //* Show notification when user change number
+  // Show notification when a user's number is changed
   const showChangeMessage = () => {
     setVisibleChange(true);
     setTimeout(() => setVisibleChange(false), 3000);
