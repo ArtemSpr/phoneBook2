@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const baseUrl = "/api/persons";
+const baseUrl = "http://localhost:3001/api/persons";
 
 // Fetch all persons from backend
 const getAll = () => {
@@ -18,6 +18,8 @@ const addPerson = (newPerson) => {
 
 // Update existing person's number
 const updatePerson = (id, updatedPerson) => {
+  console.log(typeof id);
+
   return axios.put(`${baseUrl}/${id}`, updatedPerson);
 };
 
@@ -93,11 +95,12 @@ const App = () => {
         updatePerson(existingPerson.id, updatedPerson)
           .then((response) => {
             console.log("User number updated:", response.data);
-            setPersons(
-              persons.map((person) =>
+            setPersons((prevPersons) =>
+              prevPersons.map((person) =>
                 person.id !== existingPerson.id ? person : response.data
               )
             );
+
             setNewName("");
             setNewNumber("");
           })
