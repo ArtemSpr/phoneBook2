@@ -100,9 +100,9 @@ const App = () => {
                 person.id !== existingPerson.id ? person : response.data
               )
             );
-
             setNewName("");
             setNewNumber("");
+            personsGet();
           })
           .catch((error) => {
             console.error("Error updating user:", error);
@@ -164,9 +164,10 @@ const App = () => {
             handleNameChange={handleNameChange}
             handleNumberChange={handleNumberChange}
             addPerson={addPersonFunc}
-            didExists={persons.some(
-              (p) => p.name.toLowerCase() === newName.toLowerCase()
-            )}
+            // didExists={persons.some(
+            //   (p) => p.name.toLowerCase() === newName.toLowerCase(),
+            //   console.log(newName)
+            // )}
           />
         }
         title="Add a new person"
