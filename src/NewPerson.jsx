@@ -1,3 +1,4 @@
+import { set } from "mongoose";
 import { useState } from "react";
 
 const NewPerson = (props) => {
@@ -29,8 +30,66 @@ const NewPerson = (props) => {
     setTimeout(() => setVisibleChange(false), 3000);
   };
 
+  const nameChecker = (newName) => {
+    if (newName.length < 3) {
+      alert("Name must be at least 3 characters long");
+      setVisible(false);
+      return false;
+    }
+    return true;
+  };
+
+  const numberChecker = (newNumber) => {
+    if (newNumber.length <= 8 || newNumber.length >= 15) {
+      alert("Number must be between 8 and 15 characters long");
+      setVisible(false);
+      return false;
+    } else {
+      if (newNumber.includes("-")) {
+        const target = "-";
+        let targetCount = 0;
+
+        for (const char of newNumber) {
+          if (char === target) {
+            targetCount++;
+          }
+        }
+
+        if (targetCount > 1) {
+          alert("Number can contain only one dash");
+          setVisible(false);
+          return false;
+        }
+
+        const dashPos = newNumber.indexOf("-");
+        if (dashPos === 2 || dashPos === 3) {
+          return true;
+        } else {
+          alert("Number must be in the format XX-XXXXXXX or XXX-XXXXXXX");
+          setVisible(false);
+          return false;
+        }
+      } else {
+        alert("Number must be in the format XX-XXXXXXX or XXX-XXXXXXX");
+        setVisible(false);
+        return false;
+      }
+    }
+  };
+
   return (
-    <form onSubmit={props.addPerson}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+
+        if (!nameChecker(props.newName) || !numberChecker(props.newNumber)) {
+          setVisible(false);
+          return;
+        }
+
+        props.addPerson(event);
+      }}
+    >
       <div className="inputBlock">
         <div className="inputItem">
           <h2>Name</h2>

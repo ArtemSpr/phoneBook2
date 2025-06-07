@@ -72,9 +72,9 @@ const App = () => {
   const handleNumberChange = (event) => setNewNumber(event.target.value);
   const handleFilterNameChange = (event) => setFilterName(event.target.value);
 
-  // Handle form submission
   const addPersonFunc = (event) => {
     event.preventDefault();
+    console.log("New name is: " + newName);
 
     const existingPerson = persons.find(
       (person) =>
@@ -164,10 +164,6 @@ const App = () => {
             handleNameChange={handleNameChange}
             handleNumberChange={handleNumberChange}
             addPerson={addPersonFunc}
-            // didExists={persons.some(
-            //   (p) => p.name.toLowerCase() === newName.toLowerCase(),
-            //   console.log(newName)
-            // )}
           />
         }
         title="Add a new person"
