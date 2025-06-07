@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const baseUrl = "http://localhost:3001/api/persons";
+// const baseUrl = "http://localhost:3001/api/persons";
+const baseUrl = "https://phonebook3-6bld.onrender.com/api/persons";
 
 // Fetch all persons from backend
 const getAll = () => {
